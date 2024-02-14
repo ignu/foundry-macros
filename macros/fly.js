@@ -1,27 +1,25 @@
-var token;
-if (Array.from(game.user.targets).length >= 1) {
-  token = Array.from(game.user.targets)[0];
-} else {
-  token = canvas.tokens.controlled[0];
-}
+const token = canvas.tokens.controlled[0];
 
-if (Tagger.hasTags(token, 'MagicFlying')) {
-  await Tagger.removeTags(token, 'MagicFlying');
+if (Tagger.hasTags(token, 'Flying')) {
+  await Tagger.removeTags(token, 'Flying');
   await Sequencer.EffectManager.endEffects({ name: 'Fly', object: token });
 
   new Sequence().animation().on(token).opacity(1).play();
 } else {
-  await Tagger.addTags(token, 'MagicFlying');
+  await Tagger.addTags(token, 'Flying');
 
   // random number between 0 and 5
   const randomHeightModifier = Math.floor(Math.random() * 6);
 
   // random number between -3 and 1
-  const randomLeftModifier = Math.floor(Math.random() * 5) - 3;
+  const randomLeftModifier = Math.floor(Math.random() * 11) - 9;
 
-  const randomRightModifier = Math.floor(Math.random() * 5) + 1;
+  const randomRightModifier = Math.floor(Math.random() * 8) + 1;
 
-  const randomSpeed = Math.floor(Math.random() * 4500) + 2400;
+  const randomSpeed = Math.floor(Math.random() * 14500) + 2300;
+
+  // random y duration between 2 and 5 seconds
+  const randomYDuration = Math.floor(Math.random() * 3000) + 2000;
 
   await new Sequence()
     .effect()
@@ -41,9 +39,15 @@ if (Tagger.hasTags(token, 'MagicFlying')) {
     .loopProperty('sprite', 'position.y', {
       from: 0,
       to: -10 - randomHeightModifier,
-      duration: 2500,
+      duration: randomYDuration,
       pingPong: true,
       delay: 1000,
+    })
+    .animateProperty('sprite', 'position.x', {
+      from: 0,
+      to: randomLeftModifier,
+      duration: 500,
+      ease: 'easeOutBack',
     })
     .loopProperty('sprite', 'position.x', {
       from: randomLeftModifier,
@@ -64,13 +68,26 @@ if (Tagger.hasTags(token, 'MagicFlying')) {
     .from(token)
     .name('Fly')
     .atLocation(token)
-    .scaleToObject(0.5)
+    .scaleToObject(0.6)
     .duration(1000)
     .opacity(0.6)
     .belowTokens()
     .filter('ColorMatrix', { brightness: -1 })
     .filter('Blur', { blurX: 7, blurY: 10 })
     .attachTo(token, { bindAlpha: false })
+    .animateProperty('sprite', 'position.x', {
+      from: 0,
+      to: (randomLeftModifier || 1) / 2,
+      duration: 500,
+      ease: 'easeOutBack',
+    })
+    .loopProperty('sprite', 'position.x', {
+      from: (randomLeftModifier || 1) / 2,
+      to: (randomRightModifier || 1) / 2,
+      duration: randomSpeed,
+      pingPong: true,
+      delay: 1000,
+    })
     .zIndex(1)
     .persist()
 
